@@ -62,6 +62,7 @@ class PROSIM8:
         self.PACER_CHAMBER = "A"
         self.FIB_GRANULARITY = "COARSE"
         self.con: Optional[serial.Serial] = None
+        
     def connect(self):
         """
         CONECTA PROSIM8 CON PUERTO SERIE\n
@@ -682,7 +683,91 @@ class PROSIM8:
         Finaliza la curva de respiratoria
         """
         self.sendCommand(cmd="RESPRUN=FALSE")
+        
+    
+    def setRespRate(self,rate):
+        """
+        en el caso de agregar una variable global, hay que tener cuidado\n
+        :param:
+        **rate**: respiration rate in brpm: 3 digits 010 to 150
+        """
+        self.sendCommand(cmd = f"RESPRATE={rate}")
+    
+    def setRespRatio(self,ratio):
+        """
+        No se que es el ratio (se que es relacion, pero no se a que hace referencia en una señal respiraria\n
+        :param:
+        **ratio**: 1 digit from 1 to 5
+        """
+        self.sendCommand(cmd = f"RESPRATIO={ratio}")
+        
+    def setRespAmpl(self,ampl):
+        """
+        Setea la amplitud de la curva respiratoria\n
+        :param:
+        **ampl**: 3 digits w/dp: 0.00 to 5.00 by 0.05
+        """
+        self.sendCommand(cmd = f"RESPAMPL={ampl}")
 
+    def setRespBase(self,baseline):
+        """
+        Setea la impedancia base en valores 4 digitos 0000\n
+        :param:
+        
+        **baseline**: Va desde 0500, 1000, 1500 o 2000
+        """
+        self.sendCommand(cmd=f"RESPBASE={baseline}")
+        
+    def setRespLead(self,lead):
+        lead_dic = {
+            "TRANSABD":"LA",
+            "LA":"LA",
+            "ABDOMINAL":"LA",
+            "TORACICA":"LL",
+            "LL":"LL",
+        }
+        
+        try:
+            selected_lead = lead_dic[lead]
+        except :
+            selected_lead = "LA"
+        
+        self.sendCommand(cmd=f"RESPLEAD={selected_lead}")
+
+    def APNEA(self,atrib):
+        """
+        Set APNEA
+        """
+        if atrib:
+            flag = "ON"
+        else:
+            flag = "OFF"
+        self.sendCommand(cmd=f"RESPAPNEA={flag}")
+        
+#*******************************************************************OTRAS SEÑALES*****************************************************************
+#OTRAS SEÑALES HACE REFERENCIA A:
+#                               *SENO
+#                               *CUADRADA
+#                               *TRIANGULAR
+#                               *PULSO
+
+
+    def setSINE(self,freq):
+        """
+        SETEA UNA SEÑAL SENO\n
+        :param:
+        **freq**: frequency in hz; 0.05, 0.5, 1, 2, 5, 10, 25, 30, 40, 50, 60, 100 or 150\n
+        *user notes: In practice we can used it in between ranges. P.E. 70*
+        """
+        self.sendCommand(cmd=f"SINE={freq}")
+    
+    def setTRIANGLE(self,freq):
+        """
+        set ECG WAVE to TRIANGLE\n
+        :param:
+        **freq**: frecuency in Hz: 0.125,2.0 or 2.5
+        """
+        self.sendCommand(cmd=f"TRI={freq}")       
 if __name__=="__main__":
     ps8 = PROSIM8(port="COM11", debug = True)
     ps8.connect()
